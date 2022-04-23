@@ -1,0 +1,19 @@
+4-bar works
+clamp works (pneumatics)
+odometry is finished
+auton in progress
+    auton skills/ driver skills
+        goals on platforms
+        load goals on one side
+        bring 2-3 goals with robot on other side
+    pre-match auton
+        not good rushing
+        load blue goal on platform
+        we will rush if other team is 4 motor drive
+driver not fully functional
+    wires
+TODO:
+    GET WIRES
+    Work on auton skills(details above)
+    Work on pre-match auton(details above)
+    make driver functional(hopfully already done by end of meeting)
