@@ -2,11 +2,17 @@
 //using namespace vex;
 //test
 
-void clampUp() {
-  piston.set(false);
+void motorLock() {
+  leftFront.setStopping(hold);
+  leftBack.setStopping(hold);
+  rightFront.setStopping(hold);
+  rightBack.setStopping(hold);
 }
-void clampDown() {
-  piston.set(true);
+void motorUnlock() {
+  leftFront.setStopping(coast);
+  leftBack.setStopping(coast);
+  rightFront.setStopping(coast);
+  rightBack.setStopping(coast);
 }
 void moveForward(float time, int power) {
   rightBack.setVelocity(power,percent);
@@ -22,6 +28,54 @@ void moveForward(float time, int power) {
   leftBack.stop();
   leftFront.stop();
   rightFront.stop();
+}
+void moveForwardClaw(float time, int power) {
+  sushiTimothy.setVelocity(100, percent);
+  rightBack.setVelocity(power,percent);
+  leftBack.setVelocity(power,percent);
+  leftFront.setVelocity(power,percent);
+  rightFront.setVelocity(power,percent);
+  sushiTimothy.spinFor(reverse, 2, turns, false);
+  rightBack.spin(forward);
+  leftBack.spin(forward);
+  rightFront.spin(forward);
+  leftFront.spin(forward);
+  wait(1.2, sec);
+  rightBack.stop();
+  leftBack.stop();
+  leftFront.stop();
+  rightFront.stop();
+  amogus.set(true);
+  rightBack.spin(reverse);
+  leftBack.spin(reverse);
+  rightFront.spin(reverse);
+  rightBack.spin(reverse);
+  rightBack.stop();
+  leftBack.stop();
+  leftFront.stop();
+  rightFront.stop();
+  wait(0.3, sec);
+  rightBack.spin(reverse);
+  rightFront.spin(reverse);
+  leftBack.spin(forward);
+  leftFront.spin(forward);  
+  wait(0.2, sec);
+  rightBack.stop();
+  leftBack.stop();
+  leftFront.stop();
+  rightFront.stop();
+  rightBack.spin(reverse);
+  leftBack.spin(reverse);
+  rightFront.spin(reverse);
+  rightBack.spin(reverse);
+  wait(1, seconds);
+  rightBack.stop();
+  leftBack.stop();
+  leftFront.stop();
+  rightFront.stop();
+  sushiTimothy.spinFor(reverse, 1, turns);
+
+
 }
 
 void turnLeft(float time) {
@@ -78,14 +132,7 @@ void clawFront(int direction, float rotations){
     sushiTimothy.spinFor(reverse, rotations, turns);
   }
 }
-void backLift(int direction, float rotations) {
-  if (direction == 0) {
-    fourBar.spinFor(forward, rotations, turns);
-  }
-  if (direction == 1) {
-    fourBar.spinFor(reverse, rotations, turns);
-  }
-}
+
 void backClaw(int direction, float time){
   jinx.setStopping(hold);
   jimx.setStopping(hold);
@@ -96,7 +143,7 @@ void backClaw(int direction, float time){
     jimx.stop();
     jinx.stop();
   }
-  if (direction == 1) {
+  if (direction == 1.4) {
     jimx.spin(reverse);
     jinx.spin(reverse);
     wait(time, sec);
@@ -106,21 +153,39 @@ void backClaw(int direction, float time){
 }
 
 //Constants
-double kP = 0.25;
-double kI = 0.01;
-double kD = 0.42;
+double kU = 0; //time until occilation
+double tU = 0; //period of occilation
+//1.8
+double tunedKP = 1.8;
+//0.8*ku
+//kU0.53 tU0.34
+//kP0.424
+//tD0.0425
+double kP = 0.848;
+double tD = 0.0425;
+double kD = 0.03604;
 
 void pidTurn(double angle, double tolerance) {
+  leftFront.setStopping(hold);
+  leftBack.setStopping(hold);
+  rightFront.setStopping(hold);
+  rightBack.setStopping(hold);
 
+  //Variables
+  double heading = calvin.heading(deg);
+  double error = heading - angle;
+  //double error = calvin.heading(deg) - 360 + angle;
+  double totalError = 0;
+  double lastError = 0;
+  double motorPower = 0;
+  double lastMotorPower = 0;
+  int oscillations = 0;
 
-//Variables
-double heading = calvin.heading(deg);
-double error = heading - angle;
-//double error = calvin.heading(deg) - 360 + angle;
-double totalError = 0;
-double lastError = 0;
-double motorPower = 0;
-
+  double startingTime;
+  double firstOscillation;
+  double secondOscillation;
+  timer oTimer;
+  startingTime = oTimer.value();
   //Control loop //0.5, x, 0.5, 0.5, 2, 1, x, x, 0.5, 1 
   while (error < -tolerance || error > tolerance) {
 
@@ -137,14 +202,32 @@ double motorPower = 0;
       error = -360+calvin.heading(deg);
     }
     totalError += error;
-    motorPower = (error * kP + totalError * kI + (error - lastError) * kD);
+    motorPower = kP * error + kD * (error - lastError);
+    /*if ((motorPower > 0 && lastMotorPower < 0) || (motorPower < 0 && lastMotorPower > 0)) {
+      oscillations++;
+      switch (oscillations) {
+        case 1:
+          firstOscillation = oTimer.value();
+          kU = firstOscillation - startingTime;
+          Controller1.Screen.print(kU);
+          Controller1.Screen.print("_");
+          break;
+        case 2:
+          secondOscillation = oTimer.value();
+          tU = secondOscillation - firstOscillation;
+          Controller1.Screen.print(tU);
+          break;
+        default:
+          break;
+      }
+    }*/
     double motorPowerAbs = motorPower;
     if ((motorPowerAbs < 0 && error > 0) || (motorPowerAbs > 0 && error < 0))
     {
       motorPowerAbs = -motorPowerAbs;
     }
 
-    /*if (motorPowerAbs < 0 && motorPowerAbs > -1)
+    if (motorPowerAbs < 0 && motorPowerAbs > -1)
     {
       motorPowerAbs = -1;
     } 
@@ -152,10 +235,7 @@ double motorPower = 0;
     if (motorPowerAbs > 0 && motorPowerAbs < 1)
     {
       motorPowerAbs = 1;
-    }*/
-    
-
-
+    }
     /*if (motorPower > 20) {
       motorPower = 20;
     }
@@ -178,7 +258,9 @@ double motorPower = 0;
     Controller1.Screen.print(motorPower);
     Controller1.Screen.clearScreen();
     Controller1.Screen.clearLine();
+    
     lastError = error;
+    lastMotorPower = motorPower;
     
   }
 
@@ -191,7 +273,7 @@ double motorPower = 0;
 }
 
 //Climb Constants
-double cKP = 0.4;
+double cKP = 0.3;
 double cKI = 0;
 double cKD = 0.2;
 
