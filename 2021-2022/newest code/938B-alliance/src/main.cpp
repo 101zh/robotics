@@ -83,15 +83,7 @@ void autonomous(void) {
   leftFront.stop();
   rightFront.stop();
   amogus.set(true);
-  rightBack.spin(reverse);
-  leftBack.spin(reverse);
-  rightFront.spin(reverse);
-  rightBack.spin(reverse);
-  rightBack.stop();
-  leftBack.stop();
-  leftFront.stop();
-  rightFront.stop();
-  wait(0.3, sec);
+  //^Rushing+Clamping^
   rightBack.spin(reverse);
   rightFront.spin(reverse);
   leftBack.spin(forward);
