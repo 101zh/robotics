@@ -12,7 +12,7 @@ have to check in the robots overweight and maybe oversize cost
     oversize - separate from where you drop off normal stuff
     TSA approved locks - no padlocks
     label your boxes
-don't build robots
+don't build robots at worlds
     bring spare parts for broken parts
     run your robots
 only run robot on field
