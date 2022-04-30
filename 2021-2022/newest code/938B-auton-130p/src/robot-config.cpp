@@ -8,17 +8,19 @@ using code = vision::code;
 brain  Brain;
 
 // VEXcode device constructors
-motor rightBack = motor(PORT18, ratio18_1, false);
-motor leftBack = motor(PORT17, ratio18_1, true);
-motor rightFront = motor(PORT15, ratio18_1, true);
-motor leftFront = motor(PORT2, ratio18_1, false);
+motor rightBack = motor(PORT2, ratio18_1, true);
+motor leftBack = motor(PORT15, ratio18_1, false);
+motor rightFront = motor(PORT17, ratio18_1, false);
+motor leftFront = motor(PORT18, ratio18_1, true);
 controller Controller1 = controller(primary);
 motor sushiTimothy = motor(PORT3, ratio36_1, true);
+motor jimx = motor(PORT6, ratio18_1, false);
 inertial calvin = inertial(PORT19);
-digital_out amogus = digital_out(Brain.ThreeWirePort.E);
-motor jinx = motor(PORT5, ratio18_1, false);
-motor jimx = motor(PORT9, ratio18_1, false);
-motor dn = motor(PORT16, ratio18_1, false);
+motor fourBar = motor(PORT16, ratio36_1, true);
+digital_out piston = digital_out(Brain.ThreeWirePort.E);
+motor jinx = motor(PORT1, ratio18_1, false);
+encoder LeftEncoder = encoder(Brain.ThreeWirePort.A);
+encoder RightEncoder = encoder(Brain.ThreeWirePort.G);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable
@@ -45,15 +47,15 @@ int rc_auto_loop_function_Controller1() {
         // set the toggle so that we don't constantly tell the motor to stop when the buttons are released
         Controller1LeftShoulderControlMotorsStopped = true;
       }
-      // check the ButtonR1/ButtonR2 status to control dn
+      // check the ButtonR1/ButtonR2 status to control fourBar
       if (Controller1.ButtonR1.pressing()) {
-        dn.spin(reverse);
+        fourBar.spin(reverse);
         Controller1RightShoulderControlMotorsStopped = false;
       } else if (Controller1.ButtonR2.pressing()) {
-        dn.spin(forward);
+        fourBar.spin(forward);
         Controller1RightShoulderControlMotorsStopped = false;
       } else if (!Controller1RightShoulderControlMotorsStopped) {
-        dn.stop();
+        fourBar.stop();
         // set the toggle so that we don't constantly tell the motor to stop when the buttons are released
         Controller1RightShoulderControlMotorsStopped = true;
       }
