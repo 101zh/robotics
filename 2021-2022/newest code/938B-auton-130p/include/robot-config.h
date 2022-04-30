@@ -9,11 +9,13 @@ extern motor rightFront;
 extern motor leftFront;
 extern controller Controller1;
 extern motor sushiTimothy;
-extern inertial calvin;
-extern digital_out amogus;
-extern motor jinx;
 extern motor jimx;
-extern motor dn;
+extern inertial calvin;
+extern motor fourBar;
+extern digital_out piston;
+extern motor jinx;
+extern encoder LeftEncoder;
+extern encoder RightEncoder;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
