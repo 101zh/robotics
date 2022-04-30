@@ -2,17 +2,11 @@
 //using namespace vex;
 //test
 
-void motorLock() {
-  leftFront.setStopping(hold);
-  leftBack.setStopping(hold);
-  rightFront.setStopping(hold);
-  rightBack.setStopping(hold);
+void clampUp() {
+  piston.set(false);
 }
-void motorUnlock() {
-  leftFront.setStopping(coast);
-  leftBack.setStopping(coast);
-  rightFront.setStopping(coast);
-  rightBack.setStopping(coast);
+void clampDown() {
+  piston.set(true);
 }
 void moveForward(float time, int power) {
   rightBack.setVelocity(power,percent);
@@ -28,54 +22,6 @@ void moveForward(float time, int power) {
   leftBack.stop();
   leftFront.stop();
   rightFront.stop();
-}
-void moveForwardClaw(float time, int power) {
-  sushiTimothy.setVelocity(100, percent);
-  rightBack.setVelocity(power,percent);
-  leftBack.setVelocity(power,percent);
-  leftFront.setVelocity(power,percent);
-  rightFront.setVelocity(power,percent);
-  sushiTimothy.spinFor(reverse, 2, turns, false);
-  rightBack.spin(forward);
-  leftBack.spin(forward);
-  rightFront.spin(forward);
-  leftFront.spin(forward);
-  wait(1.2, sec);
-  rightBack.stop();
-  leftBack.stop();
-  leftFront.stop();
-  rightFront.stop();
-  amogus.set(true);
-  rightBack.spin(reverse);
-  leftBack.spin(reverse);
-  rightFront.spin(reverse);
-  rightBack.spin(reverse);
-  rightBack.stop();
-  leftBack.stop();
-  leftFront.stop();
-  rightFront.stop();
-  wait(0.3, sec);
-  rightBack.spin(reverse);
-  rightFront.spin(reverse);
-  leftBack.spin(forward);
-  leftFront.spin(forward);  
-  wait(0.2, sec);
-  rightBack.stop();
-  leftBack.stop();
-  leftFront.stop();
-  rightFront.stop();
-  rightBack.spin(reverse);
-  leftBack.spin(reverse);
-  rightFront.spin(reverse);
-  rightBack.spin(reverse);
-  wait(1, seconds);
-  rightBack.stop();
-  leftBack.stop();
-  leftFront.stop();
-  rightFront.stop();
-  sushiTimothy.spinFor(reverse, 1, turns);
-
-
 }
 
 void turnLeft(float time) {
@@ -132,7 +78,14 @@ void clawFront(int direction, float rotations){
     sushiTimothy.spinFor(reverse, rotations, turns);
   }
 }
-
+void backLift(int direction, float rotations) {
+  if (direction == 0) {
+    fourBar.spinFor(forward, rotations, turns);
+  }
+  if (direction == 1) {
+    fourBar.spinFor(reverse, rotations, turns);
+  }
+}
 void backClaw(int direction, float time){
   jinx.setStopping(hold);
   jimx.setStopping(hold);
@@ -143,7 +96,7 @@ void backClaw(int direction, float time){
     jimx.stop();
     jinx.stop();
   }
-  if (direction == 1.4) {
+  if (direction == 1) {
     jimx.spin(reverse);
     jinx.spin(reverse);
     wait(time, sec);
@@ -153,81 +106,44 @@ void backClaw(int direction, float time){
 }
 
 //Constants
-double kU = 0; //time until occilation
-double tU = 0; //period of occilation
-//1.8
-double tunedKP = 1.8;
-//0.8*ku
-//kU0.53 tU0.34
-//kP0.424
-//tD0.0425
-double kP = 0.848;
-double tD = 0.0425;
-double kD = 0.03604;
+double kP = 1;
+double kI = 0;
+double kD = 0;
 
 void pidTurn(double angle, double tolerance) {
-  leftFront.setStopping(hold);
-  leftBack.setStopping(hold);
-  rightFront.setStopping(hold);
-  rightBack.setStopping(hold);
 
-  //Variables
-  double heading = calvin.heading(deg);
-  double error = heading - angle;
-  //double error = calvin.heading(deg) - 360 + angle;
-  double totalError = 0;
-  double lastError = 0;
-  double motorPower = 0;
-  double lastMotorPower = 0;
-  int oscillations = 0;
+//Variables
+double heading = (RightEncoder.position(deg) - LeftEncoder.position(deg)) * 0.0174533 * 2.75 / 15.25;
+double error = angle - heading;
+//double error = calvin.heading(deg) - 360 + angle;
+double totalError = 0;
+double lastError = 0;
+double motorPower = 0;
 
-  double startingTime;
-  double firstOscillation;
-  double secondOscillation;
-  timer oTimer;
-  startingTime = oTimer.value();
   //Control loop //0.5, x, 0.5, 0.5, 2, 1, x, x, 0.5, 1 
   while (error < -tolerance || error > tolerance) {
 
-    heading = calvin.heading(deg);
-    error = heading - /*360 +*/ angle;
+    heading = (RightEncoder.position(deg) - LeftEncoder.position(deg)) * 0.0174533 * 2.75 / 15.25;
+    error = angle - heading;
     //Always uses acute angle
-    if (error > 180 ) {
-      error = error - 360;
+    if (error > M_PI ) {
+      error = error - 2 * M_PI;
     }
-    else if (error < -180) {
-      error = 360 + error;
+    else if (error < -M_PI) {
+      error = 2* M_PI + error;
     }
-    if (calvin.heading(deg) > 180 && (angle < 10 || angle > 350)){
-      error = -360+calvin.heading(deg);
+    if ((RightEncoder.position(deg) - LeftEncoder.position(deg)) * 0.0174533 * 2.75 / 15.25 > M_PI && (angle < 0.1 || angle > 2 * M_PI - 0.1)){
+      error = -2 * M_PI+(RightEncoder.position(deg) - LeftEncoder.position(deg)) * 0.0174533 * 2.75 / 15.25;
     }
     totalError += error;
-    motorPower = kP * error + kD * (error - lastError);
-    /*if ((motorPower > 0 && lastMotorPower < 0) || (motorPower < 0 && lastMotorPower > 0)) {
-      oscillations++;
-      switch (oscillations) {
-        case 1:
-          firstOscillation = oTimer.value();
-          kU = firstOscillation - startingTime;
-          Controller1.Screen.print(kU);
-          Controller1.Screen.print("_");
-          break;
-        case 2:
-          secondOscillation = oTimer.value();
-          tU = secondOscillation - firstOscillation;
-          Controller1.Screen.print(tU);
-          break;
-        default:
-          break;
-      }
-    }*/
+    motorPower = (error * kP + totalError * kI + (error - lastError) * kD);
     double motorPowerAbs = motorPower;
     if ((motorPowerAbs < 0 && error > 0) || (motorPowerAbs > 0 && error < 0))
     {
       motorPowerAbs = -motorPowerAbs;
     }
 
-    if (motorPowerAbs < 0 && motorPowerAbs > -1)
+    /*if (motorPowerAbs < 0 && motorPowerAbs > -1)
     {
       motorPowerAbs = -1;
     } 
@@ -235,7 +151,10 @@ void pidTurn(double angle, double tolerance) {
     if (motorPowerAbs > 0 && motorPowerAbs < 1)
     {
       motorPowerAbs = 1;
-    }
+    }*/
+    
+
+
     /*if (motorPower > 20) {
       motorPower = 20;
     }
@@ -248,7 +167,7 @@ void pidTurn(double angle, double tolerance) {
     rightFront.spin(forward, motorPower, percent);
     rightBack.spin(forward, motorPower, percent);
     
-    Controller1.Screen.print(calvin.heading());
+    Controller1.Screen.print((RightEncoder.position(deg) - LeftEncoder.position(deg)) * 0.0174533 * 2.75 / 15.25);
     Controller1.Screen.print("er");
     Controller1.Screen.print(error);
     Controller1.Screen.print("te");
@@ -258,9 +177,7 @@ void pidTurn(double angle, double tolerance) {
     Controller1.Screen.print(motorPower);
     Controller1.Screen.clearScreen();
     Controller1.Screen.clearLine();
-    
     lastError = error;
-    lastMotorPower = motorPower;
     
   }
 
@@ -273,7 +190,7 @@ void pidTurn(double angle, double tolerance) {
 }
 
 //Climb Constants
-double cKP = 0.3;
+double cKP = 0.4;
 double cKI = 0;
 double cKD = 0.2;
 
