@@ -77,26 +77,26 @@ void autonomous(void) {
   clawFront(0, 1.2);
   //clawFront(1,1.1);
   //Pushes first yellow goal
-  wait(0.2, sec);   
+  wait(0.2, sec);
   turnLeft(0.55);
   moveForward(0.9, 50);
   turnRight(0.55);
   moveForward(3, 50);
-  moveForward(3, -50);
+  moveForward(3.1, -50);
   wait(0.2, sec);
   //Pushes second yellow goal
-  turnLeft(0.3);
+  turnLeft(0.275);
   moveForward(5, 50);
   //moveForward(1, -50);
   //Pushes third yellow goal
-  turnRight(0.32);
+  turnRight(0.275);
   moveForward(3, -50);
   moveForward(3, 50);
-  turnRight(1);
+  turnRight(0.55);
   clawFront(1, 1.2);
   moveForward(1, -50);
   piston.set(true);
-  turnLeft(0.75);
+  turnLeft(0.55);
   moveForward(5, -50);
 
 
@@ -261,4 +261,4 @@ int main() {
   while (true) {
     wait(100, msec);
   }
-}
+}
